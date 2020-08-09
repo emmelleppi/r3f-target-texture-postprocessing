@@ -45,7 +45,7 @@ function Environment() {
     generator.dispose();
     scene.environment = hdrCubeRenderTarget.texture;
     return () => (scene.environment = scene.background = null);
-  }, []);
+  }, [envMapTexture, gl, scene.background, scene.environment]);
   return null;
 }
 
@@ -68,44 +68,44 @@ function SpinningThing() {
   );
 }
 
+const TELEVISIONS = [
+  {
+    position: [-9.5, -0.3, 1],
+    scale: [0.9, 0.9, 0.9],
+  },
+  {
+    position: [0, 0, 0],
+    scale: [1, 1, 1],
+  },
+  {
+    position: [11, 0.4, 0.5],
+    scale: [1.2, 1.2, 1.2],
+  },
+  {
+    position: [-6, 8, 0],
+    scale: [1.4, 1.4, 1.4],
+    rotation: [0, 0, Math.PI / 32],
+  },
+  {
+    position: [12, 7.2, 0],
+    scale: [0.9, 0.9, 0.9],
+    rotation: [0, -Math.PI / 10, 0],
+  },
+  {
+    position: [12, 14, -1],
+    scale: [1.1, 1.1, 1.1],
+    rotation: [0, Math.PI / 6, 0],
+  },
+];
+
 function Cube(props) {
-  const [targetCamera] = useState(new THREE.PerspectiveCamera());
-  const [targetScene] = useState(new THREE.Scene());
+  const targetCamera = useMemo(() => new THREE.PerspectiveCamera(), []);
+  const targetScene = useMemo(() => new THREE.Scene(), []);
 
   const smaa = useLoader(SMAAImageLoader);
-  const perturbationMap = useLoader(THREE.TextureLoader, "/perturb.jpg");
+  const perturbationMap = useTextureLoader("/perturb.jpg");
 
   const { gl, scene, size, camera } = useThree();
-
-  const ARGS = [
-    {
-      position: [-9.5, -0.3, 1],
-      scale: [0.9, 0.9, 0.9],
-    },
-    {
-      position: [0, 0, 0],
-      scale: [1, 1, 1],
-    },
-    {
-      position: [11, 0.4, 0.5],
-      scale: [1.2, 1.2, 1.2],
-    },
-    {
-      position: [-6, 8, 0],
-      scale: [1.4, 1.4, 1.4],
-      rotation: [0, 0, Math.PI / 32],
-    },
-    {
-      position: [12, 7.2, 0],
-      scale: [0.9, 0.9, 0.9],
-      rotation: [0, -Math.PI / 10, 0],
-    },
-    {
-      position: [12, 14, -1],
-      scale: [1.1, 1.1, 1.1],
-      rotation: [0, Math.PI / 6, 0],
-    },
-  ];
 
   const [composer, savePass] = useMemo(() => {
     const composer = new EffectComposer(gl, {
@@ -180,7 +180,7 @@ function Cube(props) {
     composer.addPass(effectPass);
 
     return [composer, savePass];
-  }, [camera, gl, scene, targetCamera, targetScene]);
+  }, [camera, gl, perturbationMap, scene, smaa, targetCamera, targetScene]);
 
   useEffect(() => {
     composer.setSize(size.width, size.height);
@@ -196,7 +196,7 @@ function Cube(props) {
   return (
     <>
       {createPortal(<SpinningThing />, targetScene)}
-      {ARGS.map((args, index) => (
+      {TELEVISIONS.map((args, index) => (
         <group key={`0${index}`} {...args}>
           <Tv scale={[0.1, 0.1, 0.1]} />
           <Plane args={[8, 6]} position={[-1.4, 0, -1]}>
@@ -224,7 +224,7 @@ function Planes(props) {
     displacementMap,
     normalMap,
     roughnessMap,
-  ] = useLoader(THREE.TextureLoader, [
+  ] = useTextureLoader([
     "/Concrete_016_ambientOcclusion.jpg",
     "/Concrete_016_baseColor.jpg",
     "/Concrete_016_height.png",
