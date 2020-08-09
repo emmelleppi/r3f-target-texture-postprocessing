@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import React, { useMemo, useEffect, useState, Suspense } from "react";
+import React, { useMemo, useEffect } from "react";
 import { createPortal, useFrame, useThree, useLoader } from "react-three-fiber";
 import { Plane, useTextureLoader } from "drei";
 import {
@@ -19,15 +19,12 @@ import {
   NormalPass,
   KernelSize,
 } from "postprocessing";
-import COLOR from "nice-color-palettes";
 
 import Tv from "./components/Tv";
 import InTheTv from "./components/InTheTv";
 import Room from "./components/Room";
 
 import "./styles.css";
-
-const COLOR_INDEX = 45;
 
 function Environment() {
   const { gl, scene } = useThree();
@@ -99,7 +96,7 @@ function Televisions(props) {
       opacity: 1,
       blendFunction: BlendFunction.SCREEN,
       kernelSize: KernelSize.LARGE,
-      luminanceThreshold: 0.8,
+      luminanceThreshold: 0.3,
       luminanceSmoothing: 0.2,
       height: 300,
     });

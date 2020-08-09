@@ -1,4 +1,3 @@
-import { PerspectiveCamera } from "drei";
 import React, { Suspense } from "react";
 import { render } from "react-dom";
 
@@ -17,6 +16,7 @@ render(
       stencil: false,
       depth: false,
     }}
+    onCreated={({camera}) => camera.lookAt(0, 7, 0)}
   >
     <fog attach="fog" args={["#070710", 0, 50]} />
 
@@ -28,9 +28,6 @@ render(
       shadow-mapSize-width={1024}
       shadow-mapSize-height={1024}
     />
-
-    <PerspectiveCamera lookAt={[0, 0, 5]} />
-
     <Suspense fallback={null}>
       <App />
     </Suspense>
