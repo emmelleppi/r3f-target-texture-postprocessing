@@ -20,7 +20,7 @@ render(
     }}
     onCreated={({ camera }) => camera.lookAt(0, 10, 0)}
   >
-    <fog attach="fog" args={["#000000", 0, 80]} />
+    <fog attach="fog" args={["#000000", 0, 70]} />
 
     <ambientLight intensity={0.2} />
     <pointLight intensity={0.8} color="red" position={[-1, 5, 5]} />
