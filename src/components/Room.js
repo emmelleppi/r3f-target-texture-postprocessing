@@ -1,17 +1,13 @@
 import React from "react";
-import * as THREE from "three"
+import * as THREE from "three";
 import { Plane, useTextureLoader } from "drei";
 
 import COLOR from "nice-color-palettes";
 
 const COLOR_INDEX = 10;
 
-function Room({ texture,  ...props }) {
-  const [
-    carbon
-  ] = useTextureLoader([
-    "/carbon.jpeg",
-  ]);
+function Room({ texture, ...props }) {
+  const [carbon] = useTextureLoader(["/carbon.jpeg"]);
 
   const materialProps = {
     map: carbon,
@@ -27,7 +23,7 @@ function Room({ texture,  ...props }) {
     normalScale: [1.2, 1.2],
     roughness: 0.5,
     metalness: 0.1,
-    transmission: 0.1
+    transmission: 0.1,
   };
 
   return (
@@ -55,7 +51,14 @@ function Room({ texture,  ...props }) {
           color={COLOR[COLOR_INDEX][3]}
         />
       </Plane>
-      <Plane args={[50, 40]} scale={[1,1.5,1]} rotation={[-Math.PI / 2, Math.PI, Math.PI]} position={[0, 0.6, 25]}>
+
+      {/* --- this is a gag to simulate a reflection --- */}
+      <Plane
+        args={[50, 40]}
+        scale={[1, 1.5, 1]}
+        rotation={[-Math.PI / 2, Math.PI, Math.PI]}
+        position={[0, 0.6, 25]}
+      >
         <meshBasicMaterial
           attach="material"
           side={THREE.BackSide}
@@ -65,6 +68,7 @@ function Room({ texture,  ...props }) {
           map={texture}
         />
       </Plane>
+      {/* --- this is a gag to simulate a reflection --- */}
     </group>
   );
 }

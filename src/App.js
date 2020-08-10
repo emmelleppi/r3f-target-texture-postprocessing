@@ -18,20 +18,18 @@ import {
   SMAAEffect,
   NormalPass,
   KernelSize,
-  BlurPass
+  BlurPass,
 } from "postprocessing";
 
 import Tv from "./components/Tv";
 import InTheTv from "./components/InTheTv";
 import Room from "./components/Room";
 
-import "./styles.css";
-
 function Environment() {
   const { gl, scene } = useThree();
 
   const envMapTexture = useTextureLoader("/env.jpeg");
-  
+
   useEffect(() => {
     const generator = new THREE.PMREMGenerator(gl);
     generator.compileEquirectangularShader();
@@ -41,7 +39,7 @@ function Environment() {
     scene.environment = hdrCubeRenderTarget.texture;
     return () => (scene.environment = scene.background = null);
   }, [envMapTexture, gl, scene.background, scene.environment]);
-  
+
   return null;
 }
 
@@ -75,12 +73,12 @@ const TELEVISIONS = [
   },
 ];
 
-function Televisions() {
+function Scene() {
   const floorCamera = useMemo(() => {
-    const cam = new THREE.PerspectiveCamera()
-    cam.position.set(0, 0, 65)
-    cam.lookAt(0, 0, 0)
-    return cam
+    const cam = new THREE.PerspectiveCamera();
+    cam.position.set(0, 0, 65);
+    cam.lookAt(0, 0, 0);
+    return cam;
   }, []);
   const targetCamera = useMemo(() => new THREE.PerspectiveCamera(), []);
   const targetScene = useMemo(() => new THREE.Scene(), []);
@@ -102,6 +100,7 @@ function Televisions() {
     const normalPass = new NormalPass(scene, camera);
 
     const blur = new BlurPass();
+
     const savePass = new SavePass();
     const floorSavePass = new SavePass();
 
@@ -168,17 +167,26 @@ function Televisions() {
     composer.addPass(glitchPass);
     composer.addPass(chromaticAberrationPass);
     composer.addPass(savePass);
-    
+
     composer.addPass(floorRenderPass);
     composer.addPass(blur);
     composer.addPass(floorSavePass);
-    
+
     composer.addPass(renderPass);
     composer.addPass(normalPass);
     composer.addPass(effectPass);
 
-    return [composer, savePass , floorSavePass];
-  }, [camera, gl, perturbationMap, scene, smaa, targetCamera, targetScene, floorCamera]);
+    return [composer, savePass, floorSavePass];
+  }, [
+    camera,
+    gl,
+    perturbationMap,
+    scene,
+    smaa,
+    targetCamera,
+    targetScene,
+    floorCamera,
+  ]);
 
   useEffect(() => {
     composer.setSize(size.width, size.height);
@@ -194,6 +202,7 @@ function Televisions() {
   return (
     <>
       {createPortal(<InTheTv />, targetScene)}
+
       {TELEVISIONS.map((args, index) => (
         <group key={`0${index}`} {...args}>
           <Tv scale={[0.1, 0.1, 0.1]} />
@@ -205,7 +214,11 @@ function Televisions() {
           </Plane>
         </group>
       ))}
-      <Room position={[0, -4.2, -20]} texture={floorSavePass.renderTarget.texture}/>
+
+      <Room
+        position={[0, -4.2, -20]}
+        texture={floorSavePass.renderTarget.texture}
+      />
     </>
   );
 }
@@ -214,7 +227,7 @@ function App() {
   return (
     <>
       <group position={[0, 0, 10]}>
-        <Televisions />
+        <Scene />
         <Environment />
       </group>
     </>
