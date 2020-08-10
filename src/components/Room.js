@@ -19,9 +19,9 @@ function Room({ texture, ...props }) {
     normalMap: carbon,
     roughnessMap: carbon,
     clearcoat: 1,
-    clearcoatRoughness: 0.3,
+    clearcoatRoughness: 0.1,
     normalScale: [1.2, 1.2],
-    roughness: 0.5,
+    roughness: 0.9,
     metalness: 0.1,
     transmission: 0.1,
   };
@@ -48,7 +48,7 @@ function Room({ texture, ...props }) {
       <Plane args={[200, 200]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <meshPhysicalMaterial
           {...materialProps}
-          color={COLOR[COLOR_INDEX][3]}
+          color={0x000000}
         />
       </Plane>
 

@@ -1,3 +1,4 @@
+import { Html } from "drei";
 import React, { Suspense } from "react";
 import { render } from "react-dom";
 import { Canvas } from "react-three-fiber";
@@ -30,7 +31,7 @@ render(
       shadow-mapSize-width={1024}
       shadow-mapSize-height={1024}
     />
-    <Suspense fallback={null}>
+    <Suspense fallback={<Html scaleFactor={100} ><div style={{ color: "#ffffff"}}>loading...</div></Html>}>
       <App />
     </Suspense>
   </Canvas>,

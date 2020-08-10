@@ -89,7 +89,7 @@ function Scene() {
 
   const { gl, scene, size, camera } = useThree();
 
-  const [composer, savePass, floorSavePass] = useMemo(() => {
+  const [composer, targetSavePass, floorSavePass] = useMemo(() => {
     const composer = new EffectComposer(gl, {
       frameBufferType: THREE.HalfFloatType,
     });
@@ -102,7 +102,7 @@ function Scene() {
 
     const blur = new BlurPass();
 
-    const savePass = new SavePass();
+    const targetSavePass = new SavePass();
     const floorSavePass = new SavePass();
 
     const SMAA = new SMAAEffect(...smaa);
@@ -146,7 +146,7 @@ function Scene() {
       offset: 0.5,
       darkness: 0.5,
     });
-    
+
     const aOconfig = {
       blendFunction: BlendFunction.MULTIPLY,
       samples: 3, // May get away with less samples
@@ -171,12 +171,12 @@ function Scene() {
     })
 
 
-    const glitchPass = new EffectPass(targetCamera, GLITCH, NOISE);
-    const chromaticAberrationPass = new EffectPass(
+    const targetGlitchPass = new EffectPass(targetCamera, GLITCH, NOISE);
+    const targetChromaticAberrationPass = new EffectPass(
       targetCamera,
       CHROMATIC_ABERRATION
     );
-    const targetEffectPass = new EffectPass(targetCamera, VIGNETTE);
+    const targetVignettePass = new EffectPass(targetCamera, VIGNETTE);
     const effectPass = new EffectPass(
       camera,
       SMAA,
@@ -187,23 +187,24 @@ function Scene() {
       VIGNETTE_OUT
     );
 
-
-
+    //Adds the target's renderpass and effectpass and then save the result in the relative savepass
     composer.addPass(targetRenderPass);
-    composer.addPass(targetEffectPass);
-    composer.addPass(glitchPass);
-    composer.addPass(chromaticAberrationPass);
-    composer.addPass(savePass);
-
+    composer.addPass(targetVignettePass);
+    composer.addPass(targetGlitchPass);
+    composer.addPass(targetChromaticAberrationPass);
+    composer.addPass(targetSavePass);
+    
+    //Adds the floor's renderpass and blur efx and then save the result in the relative savepass
     composer.addPass(floorRenderPass);
     composer.addPass(blur);
     composer.addPass(floorSavePass);
-
+    
+    //Simple postprocessing to be applied to the whole scene
     composer.addPass(renderPass);
     composer.addPass(normalPass);
     composer.addPass(effectPass);
 
-    return [composer, savePass, floorSavePass];
+    return [composer, targetSavePass, floorSavePass];
   }, [
     camera,
     gl,
@@ -236,7 +237,7 @@ function Scene() {
           <Plane args={[8, 6]} position={[-1.4, 0, -1]}>
             <meshStandardMaterial
               attach="material"
-              map={savePass.renderTarget.texture}
+              map={targetSavePass.renderTarget.texture}
             />
           </Plane>
         </group>
