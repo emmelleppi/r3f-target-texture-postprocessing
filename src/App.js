@@ -18,6 +18,7 @@ import {
   SMAAEffect,
   NormalPass,
   KernelSize,
+  BlurPass
 } from "postprocessing";
 
 import Tv from "./components/Tv";
@@ -28,7 +29,9 @@ import "./styles.css";
 
 function Environment() {
   const { gl, scene } = useThree();
+
   const envMapTexture = useTextureLoader("/env.jpeg");
+  
   useEffect(() => {
     const generator = new THREE.PMREMGenerator(gl);
     generator.compileEquirectangularShader();
@@ -38,6 +41,7 @@ function Environment() {
     scene.environment = hdrCubeRenderTarget.texture;
     return () => (scene.environment = scene.background = null);
   }, [envMapTexture, gl, scene.background, scene.environment]);
+  
   return null;
 }
 
@@ -71,7 +75,13 @@ const TELEVISIONS = [
   },
 ];
 
-function Televisions(props) {
+function Televisions() {
+  const floorCamera = useMemo(() => {
+    const cam = new THREE.PerspectiveCamera()
+    cam.position.set(0, 0, 65)
+    cam.lookAt(0, 0, 0)
+    return cam
+  }, []);
   const targetCamera = useMemo(() => new THREE.PerspectiveCamera(), []);
   const targetScene = useMemo(() => new THREE.Scene(), []);
 
@@ -80,14 +90,20 @@ function Televisions(props) {
 
   const { gl, scene, size, camera } = useThree();
 
-  const [composer, savePass] = useMemo(() => {
+  const [composer, savePass, floorSavePass] = useMemo(() => {
     const composer = new EffectComposer(gl, {
       frameBufferType: THREE.HalfFloatType,
     });
 
     const renderPass = new RenderPass(scene, camera);
+    const floorRenderPass = new RenderPass(scene, floorCamera);
     const targetRenderPass = new RenderPass(targetScene, targetCamera);
+
     const normalPass = new NormalPass(scene, camera);
+
+    const blur = new BlurPass();
+    const savePass = new SavePass();
+    const floorSavePass = new SavePass();
 
     const SMAA = new SMAAEffect(...smaa);
     SMAA.colorEdgesMaterial.setEdgeDetectionThreshold(0.1);
@@ -96,7 +112,7 @@ function Televisions(props) {
       opacity: 1,
       blendFunction: BlendFunction.SCREEN,
       kernelSize: KernelSize.LARGE,
-      luminanceThreshold: 0.3,
+      luminanceThreshold: 0.5,
       luminanceSmoothing: 0.2,
       height: 300,
     });
@@ -126,6 +142,11 @@ function Televisions(props) {
       darkness: 0.8,
     });
 
+    const VIGNETTE_OUT = new VignetteEffect({
+      offset: 0.5,
+      darkness: 0.5,
+    });
+
     const smaaEffect = new EffectPass(targetCamera, SMAA);
     const glitchPass = new EffectPass(targetCamera, GLITCH, NOISE);
     const chromaticAberrationPass = new EffectPass(
@@ -138,9 +159,8 @@ function Televisions(props) {
       SMAA,
       BLOOM,
       DEPTH_OF_FIELD,
-      VIGNETTE
+      VIGNETTE_OUT
     );
-    const savePass = new SavePass();
 
     composer.addPass(targetRenderPass);
     composer.addPass(targetEffectPass);
@@ -148,12 +168,17 @@ function Televisions(props) {
     composer.addPass(glitchPass);
     composer.addPass(chromaticAberrationPass);
     composer.addPass(savePass);
+    
+    composer.addPass(floorRenderPass);
+    composer.addPass(blur);
+    composer.addPass(floorSavePass);
+    
     composer.addPass(renderPass);
     composer.addPass(normalPass);
     composer.addPass(effectPass);
 
-    return [composer, savePass];
-  }, [camera, gl, perturbationMap, scene, smaa, targetCamera, targetScene]);
+    return [composer, savePass , floorSavePass];
+  }, [camera, gl, perturbationMap, scene, smaa, targetCamera, targetScene, floorCamera]);
 
   useEffect(() => {
     composer.setSize(size.width, size.height);
@@ -180,6 +205,7 @@ function Televisions(props) {
           </Plane>
         </group>
       ))}
+      <Room position={[0, -4.2, -20]} texture={floorSavePass.renderTarget.texture}/>
     </>
   );
 }
@@ -187,7 +213,6 @@ function Televisions(props) {
 function App() {
   return (
     <>
-      <Room position={[0, -4.2, -20]} />
       <group position={[0, 0, 10]}>
         <Televisions />
         <Environment />

@@ -9,18 +9,20 @@ render(
   <Canvas
     shadowMap
     colorManagement
-    camera={{ position: [24, 0, 30] }}
+    concurrent
+    camera={{ position: [24, 5, 30] }}
     gl={{
       powerPreference: "high-performance",
       antialias: false,
       stencil: false,
       depth: false,
     }}
-    onCreated={({camera}) => camera.lookAt(0, 7, 0)}
+    onCreated={({camera}) => (camera.lookAt(0, 10, 0))}
   >
-    <fog attach="fog" args={["#070710", 0, 50]} />
+    <fog attach="fog" args={["#000000", 0, 70]} />
 
-    <pointLight intensity={0.4} color="red" position={[-10, 5, 5]} />
+    <ambientLight intensity={0.2}/>
+    <pointLight intensity={0.8} color="red" position={[-1, 5, 5]} />
     <pointLight
       position={[10, 1, 20]}
       intensity={0.7}
