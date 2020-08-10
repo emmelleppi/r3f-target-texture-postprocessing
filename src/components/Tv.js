@@ -1,3 +1,5 @@
+// model by warkarma -> https://sketchfab.com/3d-models/1970-tv-6bb1511500864030abde5c30630c5be9
+
 import React, { useRef } from "react";
 import { useGLTFLoader } from "drei";
 
