@@ -18,6 +18,7 @@ import {
   SMAAEffect,
   NormalPass,
   KernelSize,
+  SSAOEffect,
   BlurPass,
 } from "postprocessing";
 
@@ -145,8 +146,31 @@ function Scene() {
       offset: 0.5,
       darkness: 0.5,
     });
+    
+    const aOconfig = {
+      blendFunction: BlendFunction.MULTIPLY,
+      samples: 3, // May get away with less samples
+      rings: 4, // Just make sure this isn't a multiple of samples
+      distanceThreshold: 0.4,
+      distanceFalloff: 0.5,
+      rangeThreshold: 1, // Controls sensitivity based on camera view distance **
+      rangeFalloff: 0.01,
+      luminanceInfluence: 0.6,
+      radius: 7, // Spread range
+      intensity: 5,
+      bias: 0.5,
+    }
+    const AO = new SSAOEffect(camera, normalPass.renderTarget.texture, aOconfig)
+    const CAO = new SSAOEffect(camera, normalPass.renderTarget.texture, {
+      ...aOconfig,
+      samples: 21,
+      radius: 8,
+      intensity: 30,
+      luminanceInfluence: 0.6,
+      color: "black",
+    })
 
-    const smaaEffect = new EffectPass(targetCamera, SMAA);
+
     const glitchPass = new EffectPass(targetCamera, GLITCH, NOISE);
     const chromaticAberrationPass = new EffectPass(
       targetCamera,
@@ -156,14 +180,17 @@ function Scene() {
     const effectPass = new EffectPass(
       camera,
       SMAA,
+      CAO,
+      AO,
       BLOOM,
       DEPTH_OF_FIELD,
       VIGNETTE_OUT
     );
 
+
+
     composer.addPass(targetRenderPass);
     composer.addPass(targetEffectPass);
-    composer.addPass(smaaEffect);
     composer.addPass(glitchPass);
     composer.addPass(chromaticAberrationPass);
     composer.addPass(savePass);
